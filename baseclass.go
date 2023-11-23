@@ -2,7 +2,7 @@ package errors
 
 const UnknownError = "UNKNOWN"
 
-var BaseError = NewClass("base", "unknown error reason")
+var BaseError = newBaseClass("base", "unknown error reason")
 
 func Errorf(format string, a ...any) WTError {
 	return BaseError.Errorf(format, a...)

@@ -11,15 +11,16 @@ type WTErrorClass interface {
 	Code() string
 	Msg() string
 
-	New() WTError
-	Errorf(format string, a ...any) WTError
-	Warp(err error, format string, a ...any) WTError
-	WarpQuick(err error) WTError
+	New(...string) WTError
+	Errorf(string, ...any) WTError
+	Warp(error, string, ...any) WTError
+	WarpQuick(error) WTError
 }
 
 type wtErrorClass struct {
 	code string
 	msg  string
+	base bool
 }
 
 func (c *wtErrorClass) WTErrorClass() {}
@@ -32,8 +33,12 @@ func (c *wtErrorClass) Msg() string {
 	return c.msg
 }
 
-func (c *wtErrorClass) New() WTError {
+func (c *wtErrorClass) New(msgList ...string) WTError {
 	msg := c.msg
+	if len(msgList) != 0 {
+		msg = msgList[0]
+	}
+
 	code := c.code
 	cause := error(nil)
 	stack := getStack()
@@ -94,7 +99,7 @@ func (c *wtErrorClass) WarpQuick(err error) WTError {
 	}
 
 	var wtErr WTError
-	if errors.As(err, &wtErr) && wtErr.Code() == c.code {
+	if errors.As(err, &wtErr) && (c.base || wtErr.Code() == c.code) {
 		return wtErr
 	}
 

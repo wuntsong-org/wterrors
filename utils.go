@@ -16,6 +16,22 @@ func NewClass(code string, msgList ...string) WTErrorClass {
 	return &wtErrorClass{
 		msg:  msg,
 		code: code,
+		base: false,
+	}
+}
+
+func newBaseClass(code string, msgList ...string) WTErrorClass {
+	var msg string
+	if len(msgList) == 0 {
+		msg = strings.Replace(code, "_", " ", -1)
+	} else {
+		msg = msgList[0]
+	}
+
+	return &wtErrorClass{
+		msg:  msg,
+		code: code,
+		base: true,
 	}
 }
 
