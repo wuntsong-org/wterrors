@@ -21,7 +21,21 @@ func Errorf(format string, a ...any) WTError {
 
 func Warp(err error, format string, a ...any) WTError {
 	msg := fmt.Sprintf(format, a...)
-	code := UnknownError
+	code := getErrorName(err)
+	cause := err
+	stack := getStack()
+
+	return &wtError{
+		cause: cause,
+		msg:   msg,
+		code:  code,
+		stack: stack,
+	}
+}
+
+func WarpQuick(err error) WTError {
+	msg := "error"
+	code := getErrorName(err)
 	cause := err
 	stack := getStack()
 
