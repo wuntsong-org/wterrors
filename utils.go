@@ -2,63 +2,50 @@ package errors
 
 import (
 	"errors"
-	"fmt"
+	"strings"
 )
 
-func Errorf(format string, a ...any) WTError {
-	msg := fmt.Sprintf(format, a...)
-	code := UnknownError
-	cause := error(nil)
-	stack := getStack()
+func NewClass(code string, msgList ...string) WTErrorClass {
+	var msg string
+	if len(msgList) == 0 {
+		msg = strings.Replace(code, "_", " ", -1)
+	} else {
+		msg = msgList[0]
+	}
 
-	return &wtError{
-		cause: cause,
-		msg:   msg,
-		code:  code,
-		stack: stack,
+	return &wtErrorClass{
+		msg:  msg,
+		code: code,
 	}
 }
 
-func Warp(err error, format string, a ...any) WTError {
-	msg := fmt.Sprintf(format, a...)
-	code := getErrorName(err)
-	cause := err
-	stack := getStack()
+func Is(err error, target any) bool {
+	var wtErr WTError
+	var normalErr error
 
-	return &wtError{
-		cause: cause,
-		msg:   msg,
-		code:  code,
-		stack: stack,
-	}
-}
-
-func WarpQuick(err error) WTError {
-	msg := "error"
-	code := getErrorName(err)
-	cause := err
-	stack := getStack()
-
-	return &wtError{
-		cause: cause,
-		msg:   msg,
-		code:  code,
-		stack: stack,
-	}
-}
-
-func Is(err error, target error) bool {
-	var wtErr, wtTarget WTError
-
-	if errors.As(err, &wtErr) && errors.As(target, &wtTarget) {
-		if wtErr.Code() == wtTarget.Code() {
-			return true
-		} else if wtErr == wtTarget {
-			return true
+	if errors.As(err, &wtErr) {
+		errClass, isClass := target.(WTErrorClass)
+		if isClass {
+			return errClass.Code() == wtErr.Code()
 		}
+
+		wtTarget, isTarget := target.(WTError)
+		if isTarget {
+			if wtTarget == wtErr {
+				return true
+			}
+
+			if wtTarget.Code() == wtErr.Code() {
+				return true
+			}
+
+			return errors.Is(err, wtTarget)
+		}
+	} else if errors.As(err, &normalErr) {
+		return errors.Is(err, normalErr)
 	}
 
-	return errors.Is(err, target)
+	return false
 }
 
 func As(err error, target any) bool {

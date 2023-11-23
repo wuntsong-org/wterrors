@@ -1,11 +1,8 @@
 package errors
 
 import (
-	"errors"
 	"fmt"
 )
-
-const UnknownError = "UNKNOWN"
 
 type WTError interface {
 	/* 标记类操作 */
@@ -13,8 +10,10 @@ type WTError interface {
 	WTError() // 标记
 
 	/* 访问类操作 */
+	Class() WTErrorClass
 	Code() string
 	Message() string
+	MessageWithStack() string
 	Stack() string
 	Cause() error
 
@@ -31,9 +30,14 @@ type wtError struct {
 	msg   string
 	code  string
 	stack string
+	class WTErrorClass
 }
 
 func (*wtError) WTError() {}
+
+func (w *wtError) Class() WTErrorClass {
+	return w.class
+}
 
 func (w *wtError) Code() string {
 	return w.code
@@ -45,12 +49,26 @@ func (w *wtError) Message() string {
 	}
 
 	var cause *wtError
-	ok := errors.As(w.cause, &cause)
+	ok := As(w.cause, &cause)
 	if ok {
 		return fmt.Sprintf("[%s] %s: %s", w.code, w.msg, cause.Message())
 	}
 
 	return fmt.Sprintf("[%s] %s: %s", w.code, w.msg, w.cause.Error())
+}
+
+func (w *wtError) MessageWithStack() string {
+	if w.cause == nil {
+		return fmt.Sprintf("[%s]%s\n%s", w.code, w.msg, w.stack)
+	}
+
+	var cause *wtError
+	ok := As(w.cause, &cause)
+	if ok {
+		return fmt.Sprintf("[%s]%s: %s\n%s", w.code, w.msg, cause.Message(), w.stack)
+	}
+
+	return fmt.Sprintf("[%s]%s: %s\n%s", w.code, w.msg, w.cause.Error(), w.stack)
 }
 
 func (w *wtError) Stack() string {
@@ -67,7 +85,7 @@ func (w *wtError) Cause() error {
 
 func (w *wtError) SetCode(code string) WTError {
 	if w.code == UnknownError {
-		w.code = code
+		return w.SetCodeForce(code)
 	}
 	return w
 }
@@ -79,8 +97,7 @@ func (w *wtError) SetCodeForce(code string) WTError {
 
 func (w *wtError) SetCause(cause error) WTError {
 	if w.cause == nil {
-		w.cause = cause
-		_ = w.SetCode(getErrorName(cause))
+		return w.SetCauseForce(cause)
 	}
 	return w
 }
@@ -88,6 +105,12 @@ func (w *wtError) SetCause(cause error) WTError {
 func (w *wtError) SetCauseForce(cause error) WTError {
 	w.cause = cause
 	_ = w.SetCode(getErrorName(cause))
+
+	var wtErr WTError
+	if As(cause, &wtErr) {
+		w.stack = wtErr.Stack()
+	}
+
 	return w
 }
 
