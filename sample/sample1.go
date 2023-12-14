@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	errors "github.com/wuntsong/wterrors"
+	errors "github.com/wuntsong-org/wterrors"
 )
 
 var ErrClass1 = errors.NewClass("class 1")
