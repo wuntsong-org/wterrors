@@ -6,7 +6,7 @@ import (
 )
 
 type WTErrorClass interface {
-	WTErrorClass()
+	WTErrorClass_TAG()
 
 	Code() string
 	Msg() string
@@ -23,7 +23,7 @@ type wtErrorClass struct {
 	base bool
 }
 
-func (c *wtErrorClass) WTErrorClass() {}
+func (c *wtErrorClass) WTErrorClass_TAG() {}
 
 func (c *wtErrorClass) Code() string {
 	return c.code

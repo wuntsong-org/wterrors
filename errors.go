@@ -7,7 +7,7 @@ import (
 type WTError interface {
 	/* 标记类操作 */
 	error
-	WTError() // 标记
+	WTError_TAG() // 标记
 
 	/* 访问类操作 */
 	Class() WTErrorClass
@@ -33,7 +33,7 @@ type wtError struct {
 	class WTErrorClass
 }
 
-func (*wtError) WTError() {}
+func (*wtError) WTError_TAG() {}
 
 func (w *wtError) Class() WTErrorClass {
 	return w.class
