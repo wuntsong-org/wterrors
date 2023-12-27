@@ -12,6 +12,7 @@ type WTError interface {
 	/* 访问类操作 */
 	Class() WTErrorClass
 	Code() string
+	Msg() string
 	Message() string
 	MessageWithStack() string
 	Stack() string
@@ -41,6 +42,10 @@ func (w *wtError) Class() WTErrorClass {
 
 func (w *wtError) Code() string {
 	return w.code
+}
+
+func (w *wtError) Msg() string {
+	return w.msg
 }
 
 func (w *wtError) Message() string {
