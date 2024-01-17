@@ -46,19 +46,18 @@ func Is(err error, target any) bool {
 		}
 
 		wtTarget, isTarget := target.(WTError)
-		if isTarget {
-			if wtTarget == wtErr {
-				return true
-			}
-
-			if wtTarget.Code() == wtErr.Code() {
-				return true
-			}
-
-			return errors.Is(err, wtTarget)
+		if !isTarget {
+			return false
 		}
+
+		return errors.Is(err, wtTarget)
 	} else if errors.As(err, &normalErr) {
-		return errors.Is(err, normalErr)
+		targetErr, targetIsErr := target.(error)
+		if !targetIsErr {
+			return false
+		}
+
+		return errors.Is(err, targetErr)
 	}
 
 	return false
